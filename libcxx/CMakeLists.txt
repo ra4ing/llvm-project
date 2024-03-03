@@ -124,10 +124,6 @@ option(LIBCXX_ENABLE_VENDOR_AVAILABILITY_ANNOTATIONS
    the shared library they shipped should turn this on and see `include/__availability`
    for more details." OFF)
 option(LIBCXX_ENABLE_CLANG_TIDY "Whether to compile and run clang-tidy checks" OFF)
-set(LIBCXX_CLANG_TIDY_EXECUTABLE "" CACHE FILEPATH
-  "The clang-tidy executable to use to run the clang-tidy checks.
-   When the variable is not set cmake will search for clang-tidy.
-   This is only used when LIBCXX_ENABLE_CLANG_TIDY is ON.")
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   set(LIBCXX_DEFAULT_TEST_CONFIG "llvm-libc++-shared-gcc.cfg.in")

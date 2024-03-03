@@ -5,81 +5,10 @@
 set(LLVM_DIR_SAVE ${LLVM_DIR})
 set(Clang_DIR_SAVE ${Clang_DIR})
 
-# libc++ only supports the latest two released versions of clang-tidy. During
-# the release period there the new unreleased version is also supported. To keep
-# this code simple, always accept the last 3 versions.
-set(HEAD ${LLVM_VERSION_MAJOR})
-math(EXPR MINUS_1 "${HEAD} - 1")
-math(EXPR MINUS_2 "${MINUS_1} - 1")
-math(EXPR MINUS_3 "${MINUS_2} - 1")
-
-if("${LIBCXX_CLANG_TIDY_EXECUTABLE}" STREQUAL "")
-  set(NAMES "clang-tidy-${HEAD}"
-            "clang-tidy-${MINUS_1}"
-            "clang-tidy-${MINUS_2}"
-            "clang-tidy-${MINUS_3}"
-            "clang-tidy")
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    string(REGEX MATCH
-           "[0-9]+"
-           LIBCXX_CLANG_MAJOR
-           "${CMAKE_CXX_COMPILER_VERSION}")
-    set(NAMES "clang-tidy-${LIBCXX_CLANG_MAJOR}"
-              "clang-tidy")
-  endif()
-  find_program(LIBCXX_CLANG_TIDY NAMES ${NAMES})
-else()
-  set(LIBCXX_CLANG_TIDY "${LIBCXX_CLANG_TIDY_EXECUTABLE}" CACHE INTERNAL "")
-endif()
-
-if("${LIBCXX_CLANG_TIDY}" STREQUAL "")
-  set(LIBCXX_CLANG_TIDY "" CACHE INTERNAL "")
-  message(STATUS "Could not find a clang-tidy executable;
-                  custom libc++ clang-tidy checks will not be available.")
-  return()
-endif()
-
-execute_process(COMMAND
-            "${LIBCXX_CLANG_TIDY}" "--version"
-            OUTPUT_VARIABLE CLANG_TIDY_VERSION_OUTPUT
-            COMMAND_ERROR_IS_FATAL ANY)
-string(REGEX MATCH
-       "[0-9]+\.[0-9]+\.[0-9]+"
-       LIBCXX_CLANG_TIDY_VERSION
-       "${CLANG_TIDY_VERSION_OUTPUT}")
-
-if("${LIBCXX_CLANG_TIDY_VERSION}" VERSION_LESS "${MINUS_3}")
-  set(LIBCXX_CLANG_TIDY "" CACHE INTERNAL "")
-  message(STATUS "The clang-tidy version found ${LIBCXX_CLANG_TIDY_VERSION} is
-                  too old, version ${MINUS_3}.0.0 is required;
-                  custom libc++ clang-tidy checks will not be available.")
-  return()
-endif()
-
-# For modules clang-tidy 17 or newer is required. This is due to the state of
-# implementation in clang/clang-tidy. This additional restriction should be
-# temporary.
-# TODO(LLVM-19) Remove this check
-if("${LIBCXX_CLANG_TIDY_VERSION}" VERSION_LESS "17.0.0")
-  message(STATUS "The clang-tidy version found ${LIBCXX_CLANG_TIDY_VERSION} is
-                  too old, version 17.0.0 is required;
-                  custom libc++ clang-tidy checks will not be available.")
-endif()
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
-   NOT CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "${LIBCXX_CLANG_TIDY_VERSION}")
-
-  set(LIBCXX_CLANG_TIDY "" CACHE INTERNAL "")
-  message(STATUS "The version of clang ${CMAKE_CXX_COMPILER_VERSION} differs
-                  from the version of clang-tidy ${LIBCXX_CLANG_TIDY_VERSION};
-                  custom libc++ clang-tidy checks will not be available.")
-  return()
-endif()
-
 # Since the Clang C++ ABI is not stable the Clang libraries and clang-tidy
 # version must match. Otherwise there likely will be ODR-violations. This had
 # led to crashes and incorrect output of the clang-tidy based checks.
-find_package(Clang "${LIBCXX_CLANG_TIDY_VERSION}")
+find_package(Clang ${CMAKE_CXX_COMPILER_VERSION})
 
 set(SOURCES
     abi_tag_on_virtual.cpp
@@ -94,7 +23,6 @@ set(SOURCES
    )
 
 if(NOT Clang_FOUND)
-  set(LIBCXX_CLANG_TIDY "" CACHE INTERNAL "")
   message(STATUS "Could not find a suitable version of the Clang development package;
                   custom libc++ clang-tidy checks will not be available.")
   return()

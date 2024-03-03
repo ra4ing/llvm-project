@@ -9,13 +9,6 @@
 import os
 
 
-def _hasSubstitution(substitution, config):
-    for k, v in config.substitutions:
-        if k == substitution:
-            return True
-    return False
-
-
 def _getSubstitution(substitution, config):
     for (orig, replacement) in config.substitutions:
         if orig == substitution:

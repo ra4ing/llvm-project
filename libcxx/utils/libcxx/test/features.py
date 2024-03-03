@@ -7,7 +7,6 @@
 # ===----------------------------------------------------------------------===##
 
 from libcxx.test.dsl import *
-import libcxx.test.config as config
 from lit.BooleanExpression import BooleanExpression
 import re
 import shutil
@@ -23,7 +22,6 @@ _isAnyClangOrGCC = lambda cfg: _isAnyClang(cfg) or _isAnyGCC(cfg)
 _isClExe = lambda cfg: not _isAnyClangOrGCC(cfg)
 _isMSVC = lambda cfg: "_MSC_VER" in compilerMacros(cfg)
 _msvcVersion = lambda cfg: (int(compilerMacros(cfg)["_MSC_VER"]) // 100, int(compilerMacros(cfg)["_MSC_VER"]) % 100)
-
 
 def _getAndroidDeviceApi(cfg):
     return int(
@@ -274,11 +272,6 @@ DEFAULT_FEATURES = [
     Feature(
         name="executor-has-no-bash",
         when=lambda cfg: runScriptExitCode(cfg, ["%{exec} bash -c 'bash --version'"]) != 0,
-    ),
-    Feature(
-        name="has-clang-tidy",
-        when=lambda cfg: config._hasSubstitution("%{clang-tidy}", cfg)
-        and config._getSubstitution("%{clang-tidy}", cfg) != "",
     ),
     # Whether module support for the platform is available.
     Feature(

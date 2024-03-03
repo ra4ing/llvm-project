@@ -47,10 +47,6 @@ CLANG_FORMAT        The clang-format binary to use when generating the format
 ENABLE_CLANG_TIDY   Whether to compile and run clang-tidy checks. This variable
                     is optional.
 
-CLANG_TIDY_EXECUTABLE
-                    The clang-tidy executable to use. Its version should match
-                    the clang version used. This variable is optional.
-
 EOF
 }
 
@@ -119,10 +115,6 @@ if [ -z "${ENABLE_CLANG_TIDY}" ]; then
     ENABLE_CLANG_TIDY=Off
 fi
 
-if [ -z "${CLANG_TIDY_EXECUTABLE}" ]; then
-   CLANG_TIDY_EXECUTABLE=''
-fi
-
 function generate-cmake-base() {
     echo "--- Generating CMake"
     ${CMAKE} \
@@ -135,7 +127,6 @@ function generate-cmake-base() {
           -DLIBCXXABI_ENABLE_WERROR=YES \
           -DLIBUNWIND_ENABLE_WERROR=YES \
           -DLIBCXX_ENABLE_CLANG_TIDY=${ENABLE_CLANG_TIDY} \
-		  -DLIBCXX_CLANG_TIDY_EXECUTABLE=${CLANG_TIDY_EXECUTABLE} \
           -DLLVM_LIT_ARGS="-sv --xunit-xml-output test-results.xml --timeout=1500 --time-tests" \
           "${@}"
 }
