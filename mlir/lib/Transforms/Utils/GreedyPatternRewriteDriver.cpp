@@ -562,30 +562,39 @@ bool GreedyPatternRewriteDriver::processWorklist() {
     // Try to match one of the patterns. The rewriter is automatically
     // notified of any necessary changes, so there is nothing else to do
     // here.
-#ifndef NDEBUG
-    auto canApply = [&](const Pattern &pattern) {
-      LLVM_DEBUG({
-        logger.getOStream() << "\n";
-        logger.startLine() << "* Pattern " << pattern.getDebugName() << " : '"
-                           << op->getName() << " -> (";
-        llvm::interleaveComma(pattern.getGeneratedOps(), logger.getOStream());
-        logger.getOStream() << ")' {\n";
-        logger.indent();
-      });
-      return true;
-    };
-    auto onFailure = [&](const Pattern &pattern) {
-      LLVM_DEBUG(logResult("failure", "pattern failed to match"));
-    };
-    auto onSuccess = [&](const Pattern &pattern) {
-      LLVM_DEBUG(logResult("success", "pattern applied successfully"));
-      return success();
-    };
-#else
     function_ref<bool(const Pattern &)> canApply = {};
     function_ref<void(const Pattern &)> onFailure = {};
     function_ref<LogicalResult(const Pattern &)> onSuccess = {};
-#endif
+    bool debugBuild = false;
+#ifdef NDEBUG
+    debugBuild = true;
+#endif // NDEBUG
+    if (debugBuild || config.listener) {
+      canApply = [&](const Pattern &pattern) {
+        LLVM_DEBUG({
+          logger.getOStream() << "\n";
+          logger.startLine() << "* Pattern " << pattern.getDebugName() << " : '"
+                             << op->getName() << " -> (";
+          llvm::interleaveComma(pattern.getGeneratedOps(), logger.getOStream());
+          logger.getOStream() << ")' {\n";
+          logger.indent();
+        });
+        if (config.listener)
+          config.listener->notifyPatternBegin(pattern, op);
+        return true;
+      };
+      onFailure = [&](const Pattern &pattern) {
+        LLVM_DEBUG(logResult("failure", "pattern failed to match"));
+        if (config.listener)
+          config.listener->notifyPatternEnd(pattern, failure());
+      };
+      onSuccess = [&](const Pattern &pattern) {
+        LLVM_DEBUG(logResult("success", "pattern applied successfully"));
+        if (config.listener)
+          config.listener->notifyPatternEnd(pattern, success());
+        return success();
+      };
+    }
 
 #if MLIR_ENABLE_EXPENSIVE_PATTERN_API_CHECKS
     if (config.scope) {
@@ -731,7 +740,7 @@ void GreedyPatternRewriteDriver::notifyMatchFailure(
   LLVM_DEBUG({
     Diagnostic diag(loc, DiagnosticSeverity::Remark);
     reasonCallback(diag);
-    logger.startLine() << "** Failure : " << diag.str() << "\n";
+    logger.startLine() << "** Match Failure : " << diag.str() << "\n";
   });
   if (config.listener)
     config.listener->notifyMatchFailure(loc, reasonCallback);
