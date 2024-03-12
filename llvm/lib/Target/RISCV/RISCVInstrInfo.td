@@ -759,6 +759,34 @@ def UNIMP : RVInstI<0b001, OPC_SYSTEM, (outs), (ins), "unimp", "">,
   let imm12 = 0b110000000000;
 }
 
+// security extension
+let Predicates = [HasUnstdExtXsec] in {
+  def SJALRJ : RVInstI<0b000, OPC_SJALRJ, (outs GPR:$rd), 
+                (ins GPR:$rs1, simm12:$imm12),
+                "sjalrj", "$rd, ${imm12}(${rs1})">,
+                Sched<[WriteJalr, ReadJalr]>;
+
+  def SJALRR : RVInstI<0b001, OPC_SJALRR, (outs GPR:$rd), 
+                (ins GPR:$rs1, simm12:$imm12),
+                "sjalrr", "$rd, ${imm12}(${rs1})">,
+                Sched<[WriteJalr, ReadJalr]>;
+
+  def SSRA : RVInstR<0b0000001, 0b010, OPC_SSRA, (outs GPR:$rd), 
+             (ins GPR:$rs1, GPR:$rs2),
+             "ssra", "$rd, $rs1, $rs2">,
+             Sched<[WriteIALU, ReadIALU, ReadIALU]>;
+
+  def SSJA : RVInstR<0b0000001, 0b011, OPC_SSJA, (outs GPR:$rd), 
+             (ins GPR:$rs1, GPR:$rs2),
+             "ssja", "$rd, $rs1, $rs2">,
+             Sched<[WriteIALU, ReadIALU, ReadIALU]>;
+
+  def SICT : RVInstR<0b0000001, 0b100, OPC_SICT, (outs GPR:$rd), 
+             (ins GPR:$rs1, GPR:$rs2),
+             "sict", "$rd, $rs1, $rs2">,
+             Sched<[WriteIALU, ReadIALU, ReadIALU]>;
+}
+
 let Predicates = [HasStdExtZawrs] in {
 def WRS_NTO : RVInstI<0b000, OPC_SYSTEM, (outs), (ins), "wrs.nto", "">,
               Sched<[]> {

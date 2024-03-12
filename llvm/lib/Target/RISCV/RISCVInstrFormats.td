@@ -128,6 +128,13 @@ def lookupRISCVOpcodeByName : SearchIndex {
   let Table = RISCVOpcodesList;
   let Key = [ "Name" ];
 }
+
+def OPC_SJALRJ    : RISCVOpcode<"SJALRJ",    0b1101011>;
+def OPC_SJALRR    : RISCVOpcode<"SJALRR",    0b1101011>;
+def OPC_SSRA      : RISCVOpcode<"SSRA",      0b1101011>;
+def OPC_SSJA      : RISCVOpcode<"SSJA",      0b1101011>;
+def OPC_SICT      : RISCVOpcode<"SICT",      0b1101011>;
+
 def OPC_LOAD      : RISCVOpcode<"LOAD",      0b0000011>;
 def OPC_LOAD_FP   : RISCVOpcode<"LOAD_FP",   0b0000111>;
 def OPC_CUSTOM_0  : RISCVOpcode<"CUSTOM_0",  0b0001011>;

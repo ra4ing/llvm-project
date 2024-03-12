@@ -10,6 +10,18 @@
 // RISC-V subtarget features and instruction predicates.
 //===----------------------------------------------------------------------===//
 
+def FeatureUnstdExtXsec 
+    : SubtargetFeature<"xsec", "HasUnstdExtXsec", "true",
+        "'xsec' (Basic func of Security Extension)">;
+def HasUnstdExtXsec : Predicate<"Subtarget->hasUnstdExtXsec()">,
+                  AssemblerPredicate<(all_of FeatureUnstdExtXsec),
+                  "'xsec' (Basic func of Security Extension)">;
+
+def FeatureUnstdExtXs 
+    : SubtargetFeature<"xs", "HasUnstdExtXs", "true",
+                       "'xs' (Unstandard RISC-V Security Extension)",
+                       [FeatureUnstdExtXsec]>;
+
 def FeatureStdExtZicsr
     : SubtargetFeature<"zicsr", "HasStdExtZicsr", "true",
                        "'zicsr' (CSRs)">;
