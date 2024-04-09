@@ -97,5 +97,3 @@ add_llvm_component_library(LLVMTransformUtils
   Support
   TargetParser
   )
-
-add_llvm_pass_plugin(helloworld HelloWorld.cpp)
